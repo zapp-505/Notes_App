@@ -17,6 +17,7 @@ def login():
             if check_password_hash(user.password, password):
                 flash('Logged in successfully!',category='success')
                 login_user(user,remember=True)
+                return redirect(url_for('views.home'))
             else:
                 flash('Incorrect password,try again.',category='error')
         else:
@@ -26,14 +27,14 @@ def login():
 @auth.route('/logout')
 @login_required
 def logout():
-    logout_user
-    return redirect(url_for('auth.logout'))
+    logout_user()
+    flash('You have been logged out successfully!', category='success')
+    return redirect(url_for('auth.login'))
 
 @auth.route('/sign-up',methods=["GET","POST"])
 def sign_up():
     if request.method == "POST":
-        email = request.form.get('emai
-        )
+        email = request.form.get('email')
         first_name = request.form.get('first_name')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
@@ -41,7 +42,7 @@ def sign_up():
         user = User.query.filter_by(email=email).first()
         if user:
             flash('Email already exists.',category='error')
-        if not email or not first_name or not password1 or not password2:
+        elif not email or not first_name or not password1 or not password2:
             flash('All fields are required.', category='error')
         elif len(email)<4:
             flash('Email must be greater than 4 characters.',category='error')
@@ -56,7 +57,7 @@ def sign_up():
             db.session.add(new_user)
             db.session.commit()
             flash('Account created!', category='success')
-            login_user(user,remember=True)
+            login_user(new_user,remember=True)
             #instead of straightup url using this bcz it would work even if url for views changes
             return redirect(url_for('views.home'))
     return render_template("sign_up.html",user=current_user)
